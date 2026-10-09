@@ -101,9 +101,9 @@ The one thing that makes three extensions a family rather than three repos. Deci
   `lock_tree_alert` design (`docs/alerting.md`) written as the family rule, so each tool defines
   only what "materially worse" means for it.
 
-### 2. Decide the version floor
+### 2. ~~Decide the version floor~~ **Done**
 
-Decided: **PostgreSQL 14 and later**, for all three tools, so they stay useful to PG 14 users past
+Decided on 2026-10-09: **PostgreSQL 14 and later**, for all three tools, so they stay useful to PG 14 users past
 its end of life. PostgreSQL 14 reaches upstream end of life on 2026-11-12, and the floor is revisited then.
 
 Anything newer than 14 is a per-feature check that degrades with a stated message, never a floor.

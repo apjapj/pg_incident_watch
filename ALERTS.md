@@ -12,6 +12,9 @@ contract nobody will implement.
 - `pg_bloat_cause` and `pg_limit_runway` are design only. This contract was written before either
   has code, deliberately, so that neither has to invent a payload shape locally.
 
+The payload contract itself does not depend on the PostgreSQL version. The family's version floor,
+PostgreSQL 14 and later, is decided in the README, step 2.
+
 ## Required keys
 
 Present in **every** payload from **every** tool.
