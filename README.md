@@ -7,7 +7,7 @@ contract and plan, not code. Source: `pg_incident_watch-overview.md.pdf`, Draft 
 
 | Extension | Question it answers | State on 2026-10-08 |
 |---|---|---|
-| [`pg_lock_tree`](../pg_lock_tree/) | what's stuck now | Shipping. v1.1.10 released, green on PG 14 to 19beta4 |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. v1.1.11, green on PG 14 to 19beta4 |
 | [`pg_bloat_cause`](../pg_bloat_cause/) | what's slowing down | Design only. Overview and next steps written |
 | [`pg_limit_runway`](../pg_limit_runway/) | what will break next | Design only. Overview and next steps written |
 
@@ -76,7 +76,7 @@ promises and what the one shipping tool does. pg_lock_tree is not changed by thi
 In order. The first three are decisions the other two tools are blocked on; the rest can run in
 parallel with their builds.
 
-### 1. Write the shared alert contract (`ALERTS.md` in this directory)
+### 1. Write the shared alert contract ~~(`ALERTS.md` in this directory)~~ **Done**
 
 The one thing that makes three extensions a family rather than three repos. Decide and write down:
 
