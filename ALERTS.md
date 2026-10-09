@@ -123,11 +123,11 @@ ones.
    every payload to route it, which is the problem `tool` exists to solve.
    A listener should route on `tool`, which is correct whichever channel a tool sends on.
 4. **Payloads stay small.** PostgreSQL **refuses** an oversized `NOTIFY`; it never truncates. Measured
-   on 18.6: a payload of exactly 8000 bytes is accepted, and the failure comes at 8003 bytes with a
-   2-character channel, because the bound is on the whole message, channel included, not on the
-   payload alone. Over the bound the statement raises `payload string too long`, so in a PL/pgSQL sender
-   the exception aborts the send and the caller sees an error rather than a quiet omission. Treat 8000
-   as a hard ceiling, not a target. No unbounded arrays: a count and one example, not the list.
+   on PostgreSQL 14, 18.6 and 19beta4: a 7999-byte payload is sent, and 8000 bytes or more is refused
+   with `payload string too long`. The channel name's length makes no difference, because the limit
+   applies to the payload alone. In a PL/pgSQL sender the error aborts the send, so the caller sees an
+   error rather than a quiet omission. Treat 7999 bytes as a hard ceiling, not a target. No unbounded
+   arrays: a count and one example, not the list.
 5. **No query text and no credentials in a payload.** A channel is readable by any role that can
    `LISTEN`, and payloads end up in pagers and chat logs. Name the statement by its `query_id`, or by
    a lock or relation name, and let the reader look up the text with the privileges they have.
