@@ -66,9 +66,10 @@ promises and what the one shipping tool does. pg_lock_tree is not changed by thi
    `docs/reference.md`) allows adding `tool`, so this is a minor release, not a break.
 2. **`event` values are not yet shared.** pg_lock_tree emits `alerting` and `cleared`. The umbrella
    needs a fixed vocabulary every tool uses.
-3. **"PostgreSQL 14 and later" has a month left.** PG 14 reaches end of life on 2026-11-12
-   (`pg_lock_tree/CONTRIBUTING.md`, "The matrix"). Two tools that have not started yet should not
-   take on a version that is out of support before they ship.
+3. **"PostgreSQL 14 and later" outlives PG 14's support.** PG 14 reaches end of life on 2026-11-12
+   (`pg_lock_tree/CONTRIBUTING.md`, "The matrix"). Decided on 2026-10-09: all three tools keep 14 as
+   their floor anyway, so they stay useful to PG 14 users for months after that date. See next
+   step 2.
 4. **"Installs with `CREATE EXTENSION`" needs the files on the server first.** pg_lock_tree is
    `trusted = false` and installs via `make install`; RDS and Aurora are explicitly not promised
    (`docs/reference.md`, "Also not a promise"). The overview should say so in the same paragraph.
@@ -102,10 +103,12 @@ The one thing that makes three extensions a family rather than three repos. Deci
 
 ### 2. Decide the version floor
 
-Recommendation: the umbrella says "PostgreSQL 15 and later" from its first public release, and the
-two new tools start at 15. pg_lock_tree keeps 14 until its own planned drop. The newer catalog
-columns the tools want (for example `pg_stat_user_tables.n_tup_newpage_upd` in 16) are then a
-per-feature check, not a floor.
+Decided: **PostgreSQL 14 and later**, for all three tools, so they stay useful to PG 14 users past
+its end of life. PostgreSQL 14 reaches upstream end of life on 2026-11-12, and the floor is revisited then.
+
+Anything newer than 14 is a per-feature check that degrades with a stated message, never a floor.
+For example `pg_stat_user_tables.n_tup_newpage_upd` exists only on 16 and later, so on 14 and 15
+pg_bloat_cause's HOT-update finding cannot use it and must say so in the finding rather than guess.
 
 ### 3. Fix the shared conventions
 
