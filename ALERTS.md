@@ -7,7 +7,8 @@ that routes on two fields and ignores everything it does not recognise.
 This file is that agreement. It is small on purpose: a contract nobody can hold in their head is a
 contract nobody will implement.
 
-- `pg_lock_tree` implements it. See its `docs/alerting.md`.
+- `pg_lock_tree` implements it, since 1.1.11. See its `docs/alerting.md`, and the shipped payloads
+  [below](#pg_lock_trees-payloads-as-shipped).
 - `pg_bloat_cause` and `pg_limit_runway` are design only. This contract was written before either
   has code, deliberately, so that neither has to invent a payload shape locally.
 
@@ -21,7 +22,7 @@ Present in **every** payload from **every** tool.
 | `channel` | string | The channel it was sent on. Defaults to the tool's name. |
 | `event` | string | One of `alerting`, `escalated`, `cleared`. See below. |
 | `subject` | string | What the alert is about, and **stable across the samples of one incident**. This is the dedup key. |
-| `sampled_at` | timestamptz | When the tool formed this payload. |
+| `sampled_at` | timestamptz | When the tool formed this payload: the `NOTIFY` time, `statement_timestamp()` in `pg_lock_tree`, not the time of a stored sample. An alert is about the live state, and there is no sampled instant behind it. The name promises more than that, but it has shipped, and rule 1 forbids renaming a key. |
 
 ### `subject` is the part that is easy to get wrong
 
@@ -32,7 +33,11 @@ merely look similar**.
 
 - **Session-rooted** (`pg_lock_tree`): the prepared transaction's `root_object` where there is one,
   otherwise the root pid. A prepared transaction has no session to name, so the lock name is the only
-  identity available and pid alone would collide with any live session.
+  identity available and pid alone would collide with any live session. Shipped as
+  `coalesce(nullif(root_object, ''), 'pid ' || root_pid)`, so a session root reads `pid 179`. This is
+  the pair that has keyed `pg_lock_tree`'s alert state since 0.8, when every prepared transaction was
+  `root_pid` 0 and two of them collided into one alert. `application_name` is the weaker identity
+  (nullable, and shared by different blockers) and would re-break that case.
 - **Table-rooted** (`pg_bloat_cause`): the schema-qualified relation name. Not the OID, because a
   listener reading a log a week later cannot resolve an OID.
 - **Limit-rooted** (`pg_limit_runway`): the limit's identity, such as `sequence public.orders_id_seq`
@@ -51,8 +56,51 @@ and should say so rather than emit a subject that is subtly unstable.
 
 `escalated` is optional per tool and is **not yet implemented by `pg_lock_tree`**, which sends
 `alerting` for both onset and escalation. It is in the vocabulary now so that a consumer can write
-the branch before any tool uses it. Deciding whether `pg_lock_tree` starts sending it is a behaviour
-change and belongs in its own release, not in the one that adds `tool`.
+the branch before any tool uses it. Sending it from `pg_lock_tree` is **proposed for 1.2.0**: a
+behaviour change, so it gets its own release rather than riding along with an additive one.
+
+### Escalation, as `pg_lock_tree` decides it
+
+What "materially worse" means is each tool's own definition. `pg_lock_tree`'s, as shipped, is any of
+three, each compared against the high-water mark stored at the **last notification**, never against
+the previous sample:
+
+- **wider**: more sessions blocked than at the last notification;
+- **deeper**: a longer chain than at the last notification;
+- **longer**: the longest wait has at least **doubled** since the last notification (30s, 1m, 2m,
+  4m, ...), and only when the operator set a wait threshold at all.
+
+The previous-sample comparison is the one to avoid: a wait grows continuously, so "longer than last
+time" is true on every sample and would notify every sample.
+
+### `pg_lock_tree`'s payloads, as shipped
+
+Onset, from `lock_tree_notify()`. Escalations currently send this same shape with the same `event`:
+
+```json
+{"tool":"pg_lock_tree","subject":"pid 179","sampled_at":"2026-10-09T09:12:04.118+01:00",
+ "channel":"lock_tree","event":"alerting","root_pid":179,"root_object":null,
+ "application_name":"nightly_batch","blocked_sessions":12,"max_depth":3,"longest_wait":"1m30s",
+ "waiting_for":"relation public.ledger"}
+```
+
+Clearing, from `lock_tree_notify_resolved()`. The `subject` is built by the same expression, so a
+listener can pair it with the onset:
+
+```json
+{"tool":"pg_lock_tree","subject":"pid 179","sampled_at":"2026-10-09T09:21:40.502+01:00",
+ "event":"cleared","channel":"lock_tree","root_pid":179,"root_object":null,
+ "application_name":"nightly_batch","blocked_at_most":40,"notified_count":3}
+```
+
+**One divergence from rule 3, unresolved.** `pg_lock_tree`'s default channel is `lock_tree`, not
+`pg_lock_tree`; it predates this contract. Changing a shipped default would silently move every
+existing listener off the channel it listens on, so it stays until someone decides how to migrate it.
+A listener should route on `tool`, which is correct either way.
+
+`blocked_at_most` and `notified_count` are `pg_lock_tree`'s own keys: what the incident peaked at, and
+how many notifications it took. Values above are illustrative; the key set and order are the shipped
+ones.
 
 ## Optional keys
 
@@ -69,8 +117,13 @@ change and belongs in its own release, not in the one that adds `tool`.
 3. **One channel per tool**, named the tool, so a listener can `LISTEN` to exactly what it routes.
    A shared `incident_watch` channel was considered and rejected: it would mean every consumer parses
    every payload to route it, which is the problem `tool` exists to solve.
-4. **Payloads stay small.** PostgreSQL truncates `NOTIFY` at 8000 bytes. No unbounded arrays.
-5. **Deduplication is the sender's job, not the listener's.** A listener that receives three
+4. **Payloads stay small.** PostgreSQL refuses a `NOTIFY` payload of 8000 bytes or more with an
+   error, so the alert is lost rather than shortened. Stay well under it. No unbounded arrays: a
+   count and one example, not the list.
+5. **No query text and no credentials in a payload.** A channel is readable by any role that can
+   `LISTEN`, and payloads end up in pagers and chat logs. Name the statement by its `query_id`, or by
+   a lock or relation name, and let the reader look up the text with the privileges they have.
+6. **Deduplication is the sender's job, not the listener's.** A listener that receives three
    `alerting` messages for one subject has received a bug, and the right response is to report it.
 
 ## Adding a tool
