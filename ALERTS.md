@@ -36,8 +36,11 @@ merely look similar**.
   identity available and pid alone would collide with any live session. Shipped as
   `coalesce(nullif(root_object, ''), 'pid ' || root_pid)`, so a session root reads `pid 179`. This is
   the pair that has keyed `pg_lock_tree`'s alert state since 0.8, when every prepared transaction was
-  `root_pid` 0 and two of them collided into one alert. `application_name` is the weaker identity
-  (nullable, and shared by different blockers) and would re-break that case.
+  `root_pid` 0 and two of them collided into one alert. `application_name` is the weaker identity: it
+  is nullable, it is not part of the alert table's primary key, and unrelated blockers routinely share
+  one, so adopting it would merge their alerts the same way two prepared transactions once did. A
+  prepared transaction has no `application_name` at all, so it would fall through to null rather than
+  collide; the collision it introduces is a different one, not the same one.
 - **Table-rooted** (`pg_bloat_cause`): the schema-qualified relation name. Not the OID, because a
   listener reading a log a week later cannot resolve an OID.
 - **Limit-rooted** (`pg_limit_runway`): the limit's identity, such as `sequence public.orders_id_seq`
@@ -93,10 +96,8 @@ listener can pair it with the onset:
  "application_name":"nightly_batch","blocked_at_most":40,"notified_count":3}
 ```
 
-**One divergence from rule 3, unresolved.** `pg_lock_tree`'s default channel is `lock_tree`, not
-`pg_lock_tree`; it predates this contract. Changing a shipped default would silently move every
-existing listener off the channel it listens on, so it stays until someone decides how to migrate it.
-A listener should route on `tool`, which is correct either way.
+The channel in both examples is `lock_tree`, which is rule 3's short name rather than an exception
+to it.
 
 `blocked_at_most` and `notified_count` are `pg_lock_tree`'s own keys: what the incident peaked at, and
 how many notifications it took. Values above are illustrative; the key set and order are the shipped
@@ -114,12 +115,19 @@ ones.
    recognise. This is `pg_lock_tree`'s existing rule and it is the whole reason adding `tool` is not
    a breaking change.
 2. **Values are only ever added within a key.** `event` gains vocabulary; it does not lose any.
-3. **One channel per tool**, named the tool, so a listener can `LISTEN` to exactly what it routes.
+3. **One channel per tool**, named for the tool's short name, so a listener can `LISTEN` to exactly
+   what it routes: `lock_tree`, `bloat_cause`, `limit_runway`. The short name rather than the full one
+   because `pg_lock_tree` shipped as `lock_tree` and renaming a channel that listeners already use
+   moves them off it silently, which is not a failure anyone would notice.
    A shared `incident_watch` channel was considered and rejected: it would mean every consumer parses
    every payload to route it, which is the problem `tool` exists to solve.
-4. **Payloads stay small.** PostgreSQL refuses a `NOTIFY` payload of 8000 bytes or more with an
-   error, so the alert is lost rather than shortened. Stay well under it. No unbounded arrays: a
-   count and one example, not the list.
+   A listener should route on `tool`, which is correct whichever channel a tool sends on.
+4. **Payloads stay small.** PostgreSQL **refuses** an oversized `NOTIFY`; it never truncates. Measured
+   on 18.6: a payload of exactly 8000 bytes is accepted, and the failure comes at 8003 bytes with a
+   2-character channel, because the bound is on the whole message, channel included, not on the
+   payload alone. Over the bound the statement raises `payload string too long`, so in a PL/pgSQL sender
+   the exception aborts the send and the caller sees an error rather than a quiet omission. Treat 8000
+   as a hard ceiling, not a target. No unbounded arrays: a count and one example, not the list.
 5. **No query text and no credentials in a payload.** A channel is readable by any role that can
    `LISTEN`, and payloads end up in pagers and chat logs. Name the statement by its `query_id`, or by
    a lock or relation name, and let the reader look up the text with the privileges they have.
