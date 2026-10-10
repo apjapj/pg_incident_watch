@@ -8,11 +8,13 @@ contract and plan, not code. Source: `pg_incident_watch-overview.md.pdf`, Draft 
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
 
-| Extension | Question it answers | State on 2026-10-09 |
+| Extension | Question it answers | State on 2026-10-10 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. v1.1.13 released, green on PG 14 to 19beta4 |
-| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | Design only. Overview and next steps written |
-| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | Design only. Overview and next steps written |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. v1.1.13 released, green on PG 14 to 19beta4. Public release checklist drafted (step 8) |
+| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.1 built, current state only; scenarios and pgTAP green on 14 and 18; not tagged |
+| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.1 built, current state only; 13 scenarios and pgTAP green on 14 and 18; not tagged |
+
+All four repositories are private on GitHub today, so these links work only for their owner.
 
 ## Overview
 
@@ -155,6 +157,15 @@ thing a rota copies. It stays an example, not a component: paging is still the d
 
 Update this page and the PDF once 1 to 3 are decided: correct the version line, add the
 `make install` caveat, and link each tool's INSTALL.md as they appear.
+
+### 8. Make the family public, starting with pg_lock_tree
+
+The checklist is in pg_lock_tree's [docs/roadmap.md](https://github.com/apjapj/pg_lock_tree/blob/main/docs/roadmap.md#making-the-repository-public),
+where its roadmap lives: what can be prepared now (internal host names in the workflows and history,
+secret scanning on GitHub, a licence GitHub can detect, a security policy, release notes) and the
+outward steps that are Piotr's alone (pushing v1.x tags, the v1.1.13 Release, visibility, branch
+protection). This page goes public with or after pg_lock_tree, with its status table current, since
+its links are 404s to a public reader while the siblings are private.
 
 ## Open questions
 
