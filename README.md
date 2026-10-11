@@ -8,9 +8,9 @@ contract and plan, not code. Source: `pg_incident_watch-overview.md.pdf`, Draft 
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
 
-| Extension | Question it answers | State on 2026-10-10 |
+| Extension | Question it answers | State on 2026-10-11 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. v1.1.13 released, green on PG 14 to 19beta4. Public release checklist drafted (step 8) |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.15 on main, green on PG 14 to 19beta4 on both CI systems; not yet tagged on GitHub. Public release checklist in its roadmap (step 8) |
 | [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.1 built, current state only; scenarios and pgTAP green on 14 and 18; not tagged |
 | [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.1 built, current state only; 13 scenarios and pgTAP green on 14 and 18; not tagged |
 
