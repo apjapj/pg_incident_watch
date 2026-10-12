@@ -57,25 +57,28 @@ A monitoring role needs `pg_read_all_stats` plus `SELECT` on each tool's views; 
 `INSTALL.md`. History and alerting are opt-in: schedule the sample functions with `pg_cron` or a host
 cron job.
 
-## Where the overview and pg_lock_tree disagree today
+## Where the overview and pg_lock_tree disagree
 
-Checked against `../pg_lock_tree` on 2026-10-08. These are the gaps between what the umbrella
-promises and what the one shipping tool does. pg_lock_tree is not changed by this document.
+A dated audit, first run on 2026-10-08 and re-checked on 2026-10-12. These are the gaps between what
+the umbrella promises and what the one shipping tool does. Each item carries its status: **Open** means
+it still holds, **Resolved** means it no longer does. pg_lock_tree is not changed by this document.
 
-1. **There is no `tool` field yet.** pg_lock_tree's payload (`docs/alerting.md#the-payload`) is
-   `channel`, `event`, `root_pid`, `application_name`, `blocked_sessions`, `max_depth`,
-   `longest_wait`, `waiting_for`. Its stability rule ("NOTIFY payload keys: additive only",
-   `docs/reference.md`) allows adding `tool`, so this is a minor release, not a break.
-2. **`event` values are not yet shared.** pg_lock_tree emits `alerting` and `cleared`. The umbrella
-   needs a fixed vocabulary every tool uses.
-3. **"PostgreSQL 14 and later" outlives PG 14's support.** PG 14 reaches end of life on 2026-11-12
-   (`pg_lock_tree/CONTRIBUTING.md`, "The matrix"). Decided on 2026-10-09: all three tools keep 14 as
-   their floor anyway, so they stay useful to PG 14 users for months after that date. See next
-   step 2.
-4. **"Installs with `CREATE EXTENSION`" needs the files on the server first.** pg_lock_tree is
-   `trusted = false` and installs via `make install`; RDS and Aurora are explicitly not promised
-   (`docs/reference.md`, "Also not a promise"). The overview should say so in the same paragraph.
-5. **"See each tool's INSTALL.md"** is only true for pg_lock_tree.
+1. **Resolved on 2026-10-12.** ~~There is no `tool` field yet.~~ `pg_lock_tree` has emitted `tool`,
+   `subject` and `sampled_at` since 1.1.11, under its additive-keys rule. Nothing is outstanding.
+2. **Partly resolved on 2026-10-12.** ~~`event` values are not yet shared.~~ The vocabulary is now
+   fixed in [ALERTS.md](ALERTS.md) (`alerting`, `escalated`, `cleared`). `pg_lock_tree` sends
+   `alerting` and `cleared`; the remaining gap is that it does not yet send `escalated`, proposed for
+   1.2.0. Open only for `escalated`.
+3. **Open.** **"PostgreSQL 14 and later" outlives PG 14's support.** PG 14 reaches end of life on
+   2026-11-12 (`pg_lock_tree/CONTRIBUTING.md`, "The matrix"). Decided on 2026-10-09: all three tools
+   keep 14 as their floor anyway, so they stay useful to PG 14 users for months after that date. See
+   next step 2.
+4. **Open.** **"Installs with `CREATE EXTENSION`" needs the files on the server first.**
+   `pg_lock_tree` is `trusted = false` and installs via `make install`; RDS and Aurora are explicitly
+   not promised (`docs/reference.md`, "Also not a promise"). The overview should say so in the same
+   paragraph.
+5. **Resolved on 2026-10-12.** ~~"See each tool's INSTALL.md" is only true for pg_lock_tree.~~ All
+   three tools now ship an INSTALL.md.
 
 ## Next steps
 
