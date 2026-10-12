@@ -1,9 +1,9 @@
 # pg_incident_watch CI on Forgejo: the contract gate, mirroring .github/workflows/ci.yml.
 #
-# One job, and it needs no PostgreSQL at all, so it runs on the `docker` label rather than a
-# babar-pg one: check-contract.sh is pure text. The two files are kept deliberately parallel; a
-# divergence between the two CI systems is the thing the family's release process catches, and this
-# job is the cheapest place it would show up.
+# One job, and it needs no PostgreSQL at all, so it runs on the `docker` label rather than one of
+# the database runner labels: check-contract.sh is pure text. The two files are kept deliberately
+# parallel; a divergence between the two CI systems is the thing the family's release process
+# catches, and this job is the cheapest place it would show up.
 name: ci
 
 on:
