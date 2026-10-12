@@ -3,18 +3,19 @@
 **Detect, diagnose and act on PostgreSQL incidents from inside the database.**
 
 Umbrella for three small, independent, pure-SQL extensions. This directory holds the family's shared
-contract and plan, not code. Source: `pg_incident_watch-overview.md.pdf`, Draft v0.1, 2026-10-08.
+contract and plan, not code. The planning document this was drafted from is not public; what is, and
+what the tools are held to, is this page and [ALERTS.md](ALERTS.md).
 
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
 
 | Extension | Question it answers | State on 2026-10-12 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.16 on main, tagged `v1.1.15` (release 1.1.15); 517 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.16 on main, tagged `v1.1.15` and `v1.1.16`, both released and 1.1.16 latest; 517 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
 | [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.1 built, current state only; tagged `v0.1.0` (release 0.1.0); 13 scenarios and 19 pgTAP tests green on 14 and 18 |
 | [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.2.1 built, with history and projected dates; tagged `v0.2.0` and `v0.2.1` (releases 0.2.0 and 0.2.1); 19 scenarios and 71 pgTAP tests green on 14 and 18 |
 
-All four repositories are private on GitHub today, so these links work only for their owner.
+The three extensions are separate repositories on purpose: install only what you need.
 
 ## Overview
 
@@ -169,8 +170,7 @@ secret scanning on GitHub, a licence GitHub can detect, a security policy, relea
 outward steps that are Piotr's alone (pushing the public tags, the GitHub Releases, visibility, branch
 protection). As of 2026-10-12 the public tags are v1.1.15 and v1.1.16 (both released); what remains for
 Piotr alone is visibility and branch protection. This page goes public with or after pg_lock_tree,
-with its status table current, since its links are 404s to a public reader while the siblings are
-private.
+so the links above are live for a public reader when it does.
 
 ## Open questions
 
