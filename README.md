@@ -8,11 +8,11 @@ contract and plan, not code. Source: `pg_incident_watch-overview.md.pdf`, Draft 
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
 
-| Extension | Question it answers | State on 2026-10-11 |
+| Extension | Question it answers | State on 2026-10-12 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.15 on main, green on PG 14 to 19beta4 on both CI systems; not yet tagged on GitHub. Public release checklist in its roadmap (step 8) |
-| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.1 built, current state only; scenarios and pgTAP green on 14 and 18; not tagged |
-| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.1 built, current state only; 13 scenarios and pgTAP green on 14 and 18; not tagged |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.16 on main, tagged `v1.1.15` (release 1.1.15); 517 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
+| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.1 built, current state only; tagged `v0.1.0` (release 0.1.0); 13 scenarios and 19 pgTAP tests green on 14 and 18 |
+| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.2.1 built, with history and projected dates; tagged `v0.2.0` and `v0.2.1` (releases 0.2.0 and 0.2.1); 19 scenarios and 71 pgTAP tests green on 14 and 18 |
 
 All four repositories are private on GitHub today, so these links work only for their owner.
 
