@@ -1,0 +1,24 @@
+# pg_incident_watch CI: the contract gate.
+#
+# This repository ships no extension: it is a contract, a plan and a licence, so there is no
+# database, no pgTAP and no scenario suite to run. The one job checks the things that can rot
+# silently in a documentation-only repository: the family's licence staying byte-identical, the
+# shared NOTIFY contract's shipped payloads still carrying its required keys, the three tools still
+# named, local links resolving, and the house no-em-dash rule.
+#
+# Every check is in scripts/check-contract.sh, so it runs the same locally and in CI.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: the alert contract is coherent and the licence is the family's
+        run: ./scripts/check-contract.sh
+      - name: every script parses
+        run: for s in scripts/*.sh; do bash -n "$s" || exit 1; done
