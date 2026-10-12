@@ -1,5 +1,8 @@
 # pg_incident_watch
 
+[![Contract check](https://github.com/apjapj/pg_incident_watch/actions/workflows/ci.yml/badge.svg)](https://github.com/apjapj/pg_incident_watch/actions/workflows/ci.yml)
+[![Licence: PostgreSQL](https://img.shields.io/badge/licence-PostgreSQL-blue.svg)](LICENSE)
+
 **Detect, diagnose and act on PostgreSQL incidents from inside the database.**
 
 Umbrella for three small, independent, pure-SQL extensions. This directory holds the family's shared

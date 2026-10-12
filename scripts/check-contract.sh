@@ -142,7 +142,15 @@ for f in $DOCS_ALL; do
     if [ -e "$dir/$p" ] || [ -e "$p" ]; then :; else bad "$f mentions '$p', which does not exist here and names no sibling"; fi
   done
 done
-ok "local links checked across $DOCS_ALL (sibling-repository references are excluded by design)"
+# The message names the documents that were actually read, not the glob it iterated. A check
+# reporting "docs/*.md" on a repository with no docs/ directory looks like it covered a file it
+# never opened, and a reader has to go and verify that before trusting the count.
+docs_checked=""
+for f in $DOCS_ALL; do
+  [ -f "$f" ] || continue
+  docs_checked="$docs_checked ${f}"
+done
+ok "local links checked across${docs_checked:- (no documents found)} (sibling-repository references are excluded by design)"
 
 # ---------------------------------------------------------------- house style
 step "house style"
