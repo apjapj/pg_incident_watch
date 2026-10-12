@@ -9,8 +9,9 @@ contract nobody will implement.
 
 - `pg_lock_tree` implements it, since 1.1.11. See its `docs/alerting.md`, and the shipped payloads
   [below](#pg_lock_trees-payloads-as-shipped).
-- `pg_bloat_cause` and `pg_limit_runway` are design only. This contract was written before either
-  has code, deliberately, so that neither has to invent a payload shape locally.
+- `pg_bloat_cause` and `pg_limit_runway` now ship code, but neither sends on the channel yet. The
+  contract was written before either had code, deliberately, so that neither had to invent a payload
+  shape locally; neither has implemented the five required keys so far.
 
 The payload contract itself does not depend on the PostgreSQL version. The family's version floor,
 PostgreSQL 14 and later, is decided in the README, step 2.

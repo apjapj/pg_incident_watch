@@ -166,9 +166,11 @@ Update this page and the PDF once 1 to 3 are decided: correct the version line, 
 The checklist is in pg_lock_tree's [docs/roadmap.md](https://github.com/apjapj/pg_lock_tree/blob/main/docs/roadmap.md#making-the-repository-public),
 where its roadmap lives: what can be prepared now (internal host names in the workflows and history,
 secret scanning on GitHub, a licence GitHub can detect, a security policy, release notes) and the
-outward steps that are Piotr's alone (pushing v1.x tags, the v1.1.13 Release, visibility, branch
-protection). This page goes public with or after pg_lock_tree, with its status table current, since
-its links are 404s to a public reader while the siblings are private.
+outward steps that are Piotr's alone (pushing the public tags, the GitHub Releases, visibility, branch
+protection). As of 2026-10-12 the public tags are v1.1.15 and v1.1.16 (both released); what remains for
+Piotr alone is visibility and branch protection. This page goes public with or after pg_lock_tree,
+with its status table current, since its links are 404s to a public reader while the siblings are
+private.
 
 ## Open questions
 
