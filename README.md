@@ -16,6 +16,8 @@ umbrella and the three extensions it covers.
 | [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.2.1 built, with history and projected dates; tagged `v0.2.0` and `v0.2.1` (releases 0.2.0 and 0.2.1); 19 scenarios and 71 pgTAP tests green on 14 and 18 |
 
 The three extensions are separate repositories on purpose: install only what you need.
+Changing the contract or the plan, and what this repository's gate does not check:
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Overview
 
