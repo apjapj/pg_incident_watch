@@ -12,7 +12,7 @@ on:
 
 jobs:
   contract:
-    # The `docker` label, not babar-pg: no database is started or needed.
+    # The `docker` label, not a database runner label: no database is started or needed.
     runs-on: docker
     steps:
       - uses: actions/checkout@v4
