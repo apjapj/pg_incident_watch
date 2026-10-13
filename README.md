@@ -5,9 +5,11 @@
 
 **Detect, diagnose and act on PostgreSQL incidents from inside the database.**
 
-Umbrella for three small, independent, pure-SQL extensions. This directory holds the family's shared
-contract and plan, not code. The planning document this was drafted from is not public; what is, and
-what the tools are held to, is this page and [ALERTS.md](ALERTS.md).
+Umbrella for three small, independent, pure-SQL extensions. This repository holds the family's
+shared contract and plan, plus the one piece of code that belongs to the family rather than to
+any one tool: [`scripts/listen.sh`](scripts/listen.sh), a reference listener that follows all
+three tools at once. The planning document this was drafted from is not public; what is, and what
+the tools are held to, is this page and [ALERTS.md](ALERTS.md).
 
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
@@ -42,7 +44,23 @@ Each extension is pure SQL, installs with `CREATE EXTENSION`, needs no restart a
 | **Review** | Sampled history, so an incident can be examined after it has ended |
 
 Alerts from all three share one JSON payload format with a `tool` field, so one listener can route
-all of them.
+all of them. [`scripts/listen.sh`](scripts/listen.sh) is that listener, and it is the one piece of
+code this repository owns:
+
+```bash
+PGHOST=... PGDATABASE=... ./scripts/listen.sh
+```
+
+It opens three `LISTEN`s in one session and prints each payload as it arrives, routed on `tool`.
+It needs only `psql`, takes its connection from the standard libpq environment variables, and
+checks each payload against the required-key table in [ALERTS.md](ALERTS.md) as it goes, so a
+payload that has lost a key is visible at the moment it arrives. Two things it deliberately does
+not do, per rule 1: it never treats an unrecognised key as a defect, and it never sends anything
+anywhere. Paging is the deployment's decision, not this script's.
+
+The contract check verifies the listener against `ALERTS.md` rather than against a copy, so the two
+cannot drift: if rule 3 names a channel the listener does not open, or the required-key table grows
+a row the listener does not check, `make`-equivalent CI fails with the file and the line.
 
 ### What it is not
 
@@ -156,11 +174,21 @@ Once step 1 is written: a minor pg_lock_tree release adding `tool: "pg_lock_tree
 required keys to both payloads, with a test that the payload validates against the contract. Raise
 it on pg_lock_tree's roadmap.
 
-### 6. Ship a reference listener
+### 6. ~~Ship a reference listener~~ **Done: [`scripts/listen.sh`](scripts/listen.sh)**
 
-A small script (`listen.py` or a `psql` loop) that `LISTEN`s on all three channels and prints or
-forwards the payloads, routing on `tool` and `event`. It proves the shared format works and is the
-thing a rota copies. It stays an example, not a component: paging is still the deployment's job.
+`LISTEN`s on all three channels in one session and prints the payloads, routing on `tool`. A `psql`
+loop rather than `listen.py`, for one reason: `psql` ships with every PostgreSQL installation, so
+this runs anywhere without a driver. It proves the shared format works and is the thing a rota
+copies. It stays an example, not a component: paging is still the deployment's job, and the script
+opens no port and sends nothing anywhere.
+
+The obvious way to write this does not work, which is worth recording because the failure is silent.
+psql's `NOTIFY_PAYLOAD` variable is the documented way to read a notification's payload, and psql
+populates it only when it is reading commands from a terminal. In a script it stays unset, the
+listener runs, connects, and prints nothing at all, with no error anywhere. Verified on 18.6 both
+with `-f` and on stdin. In a script psql instead prints its own message, and the script slices the
+payload between two fixed literals in it. For a long-running listener, `psycopg2` blocks on the
+socket and has no polling interval at all; that variant is not shipped because it needs a driver.
 
 ### 7. Release the overview
 
