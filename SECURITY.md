@@ -2,8 +2,14 @@
 
 ## Supported versions
 
-This repository has no code and no releases: the current text on `main` is the one supported.
-Each extension's own policy says which of its versions are supported.
+This repository has no extension and no releases: the current text and `scripts/listen.sh` on `main`
+are the only supported version, and there is nothing to upgrade from. Each extension's own policy
+says which of its versions are supported.
+
+`scripts/listen.sh` runs under the role you connect as and does exactly what `psql` does. It opens no
+port, listens on nothing, and sends nothing anywhere: it prints what the database sends it. If you
+add a forwarding option to it, that changes this paragraph, because a script that can page is a
+different thing from one that cannot.
 
 ## Reporting a vulnerability
 
@@ -21,13 +27,17 @@ Either way, please include which of the family's extensions and documents it con
 versions, the PostgreSQL major version, the roles and grants involved, and the smallest reproduction.
 
 You will get an acknowledgement within 7 days. This is a small project maintained in spare time, so
-there is no fixed date for a fix; you will be told what is planned, and credited in the CHANGELOG
-unless you ask not to be.
+there is no fixed date for a fix; you will be told what is planned, and credited by name in the
+commit that carries the fix unless you ask not to be.
+
+This repository is never tagged and has no CHANGELOG, deliberately: it ships no extension, so
+there is nothing to version. Its history is the record, and `git log` is the place to look. The
+three extensions each keep a CHANGELOG and credit reporters there.
 
 ## What counts
 
-This repository holds the family's shared contract and plan, not code. A vulnerability in one of the
-extensions belongs to that extension's repository and its own policy:
+This repository holds the family's shared contract and plan, and one reference listener. A
+vulnerability in an extension belongs to that extension's repository and its own policy:
 [pg_lock_tree](https://github.com/apjapj/pg_lock_tree), [pg_bloat_cause](https://github.com/apjapj/pg_bloat_cause)
 and [pg_limit_runway](https://github.com/apjapj/pg_limit_runway). Report it here when it is in what
 is shared: the alert contract (ALERTS.md), for example a payload key that would carry something a

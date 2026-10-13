@@ -2,11 +2,15 @@
 # check-contract.sh: gate for pg_incident_watch, the umbrella that defines the family's shared
 # NOTIFY alert contract and links to the three tools.
 #
-# This repository ships no extension: it is a contract, a plan, and a licence. There is no code to
-# test, so a CI gate here has to protect the things that can rot silently:
+# This repository ships no extension: it is a contract, a plan, a licence, and one reference
+# listener. There is no extension to install and no test suite to run against a server, but the
+# listener is code and code can be wrong in a way prose is not, so a CI gate here has to protect
+# the things that can rot silently:
 #
 #   - the contract's own coherence: the required keys are the ones the shipped payloads carry, and
 #     the shipped payloads parse and name the right event.
+#   - the listener agreeing with the contract: it must LISTEN on exactly the channels rule 3
+#     names, and its required-key list must be the table's, not a copy that has drifted.
 #   - the family licence staying byte-identical across all four repositories.
 #   - every local link in the docs resolving, and the house no-em-dash rule.
 #
@@ -91,6 +95,70 @@ PY
     [ -z "$verdict" ] && continue
     [ "$verdict" = OK ] && ok "$msg" || bad "$msg"
   done <<<"$payload_report"
+fi
+
+# ---------------------------------------------------------------- the listener matches the contract
+step "the reference listener agrees with the contract"
+# The listener is the only code in this repository, so it is the only thing here that can be wrong
+# in ways prose cannot. Two ways it can drift, both quiet:
+#
+#   1. It LISTENs on a channel the contract does not name, or misses one it does. A listener that
+#      misses a tool's channel silently shows that tool never alerting, which looks exactly like a
+#      healthy database.
+#   2. Its REQUIRED_JSON list drifts from the required-keys table. Then the warning it prints on a
+#      malformed payload is wrong, and it is wrong in the direction of saying nothing.
+#
+# Both are compared against ALERTS.md rather than against constants in this script. Rule 3's
+# channel names and the required-keys table are the contract; anything this script or the listener
+# repeats is a copy, and a copy is what drifts.
+LISTENER=scripts/listen.sh
+if [ ! -f "$LISTENER" ]; then
+  bad "$LISTENER is missing: the README and the plan point at it"
+else
+  # Rule 3 names the channels. Take them from the contract sentence rather than from a list here.
+  contract_channels=$(sed -n 's/.*`lock_tree`, `bloat_cause`, `limit_runway`.*/lock_tree bloat_cause limit_runway/p' ALERTS.md | head -1)
+  [ -n "$contract_channels" ] \
+    && ok "rule 3 names these channels: $contract_channels" \
+    || bad "could not find the channel list in rule 3 of ALERTS.md; expected one sentence naming lock_tree, bloat_cause, limit_runway"
+
+  # What the listener declares, from its own default assignment. Collapse runs of whitespace to a
+  # single space rather than deleting every space, which would also delete the separators and make
+  # "lock_tree bloat_cause" compare as one word. Order is not compared: rule 3 fixes the set.
+  listen_channels=$(sed -n 's/^CHANNELS=(\(.*\))$/\1/p' "$LISTENER" | head -1 | tr -d '"' \
+      | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
+  norm() { printf '%s' "$1" | tr ' ' '\n' | grep -v '^$' | sort | paste -sd' ' -; }
+  if [ "$(norm "$listen_channels")" = "$(norm "$contract_channels")" ]; then
+    ok "the listener defaults to the same channels: $(norm "$listen_channels")"
+  else
+    bad "the listener LISTENs on '$listen_channels' but rule 3 names '$contract_channels'.
+       A listener that misses a channel shows that tool never alerting, which is
+       indistinguishable from a healthy database."
+  fi
+
+  # Its required-key list must be the table's. Quoted on both sides, because the table carries
+  # bare key names and the listener carries a JSON array.
+  listen_keys=$(sed -n "s/^REQUIRED_JSON='\(.*\)'$/\1/p" "$LISTENER" | head -1)
+  table_keys=$(sed -n '/^| key | type | meaning |/,/^$/p' ALERTS.md \
+               | grep -oE '^\| `[a-z_]+`' | tr -d '|` ' | paste -sd, -)
+  # The table writes bare key names; the listener holds a JSON array, so quote each name.
+  table_keys_json=$(printf '%s' "$table_keys" | sed 's/\([a-z_]\)/"\1"/g; s/""//g')
+  table_keys_json="[$table_keys_json]"
+  if [ -z "$listen_keys" ]; then
+    bad "could not read REQUIRED_JSON out of $LISTENER; the contract check cannot verify it"
+  elif [ "$listen_keys" = "$table_keys_json" ]; then
+    ok "the listener's required keys are the table's: $table_keys"
+  else
+    bad "the listener checks '$listen_keys' but the required-keys table says '$table_keys_json'.
+       Its missing-key warning would then be wrong, and wrong in the direction of silence."
+  fi
+
+  # It must not demand the whole key set. Rule 1 says keys are only ever added, so a payload with
+  # a key nobody has heard of is legal, and the listener must not treat that as a defect.
+  if grep -q 'keys are only ever added' "$LISTENER" && grep -q 'has(\$k)' "$LISTENER"; then
+    ok "the listener checks for missing keys, not for extra ones, per rule 1"
+  else
+    bad "the listener should test for MISSING required keys and ignore unknown ones, per rule 1"
+  fi
 fi
 
 # ---------------------------------------------------------------- the three tools are named
