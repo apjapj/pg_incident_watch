@@ -66,6 +66,15 @@ is carried by two payload fields that any escalating tool sends, `level` (the se
 on the same `alerting` event: `previous_level` is null at onset, and set and lower than `level` at an
 escalation.
 
+**The level's meaning is pinned here, so the tools cannot drift.** At onset `level` is `1` and
+`previous_level` is null. On each escalation `level` is the previous level plus one, which is the
+tool's own count of notifications for the subject (`notify_count + 1`), and `previous_level` is the
+previous level. A level therefore counts how far an incident has climbed, one step per rung, and
+matches a per-tool severity that rises one step at a time, as `pg_bloat_cause`'s size rungs do. The
+`cleared` payload carries the **last level reached** at `level`, with `previous_level` absent, so a
+listener sees how far the incident got before it cleared. `pg_lock_tree` sends all of this in 1.2.0;
+`pg_bloat_cause` is the next tool to, with the sampler in step 6.
+
 This was decided rather than assumed. A new event value would have meant every consumer writing a
 branch for something the payload can already say, and the escalation rule is unchanged either way:
 materially worse is measured against the **last notification**, not the last sample. `pg_lock_tree` is
