@@ -56,6 +56,42 @@ to it is a change to three repositories, not one.
 - **New keys must be documented in the table** and added to both examples, or the gate
   will not see them as required and a reader cannot tell what is contractual.
 
+## Shared conventions
+
+Written once here so the three tools do not each reinvent them. Every object in the family follows
+these, and `pg_lock_tree` is the reference because it shipped first.
+
+- **Naming.** Every object is prefixed with the tool name: `lock_tree_*`, `bloat_cause_*`,
+  `limit_runway_*`.
+- **Function shapes.** The same verbs, so muscle memory transfers: `_text()` reads, `_command()`
+  returns runnable SQL and never runs it, `_sample()`, `_notify()`, `_notify_resolved()`, `_prune()`,
+  `_history_size()`, and `_find()` for a search over the stored history. `_find()` is on the list
+  because `lock_tree_archive_find()` shipped before this document existed, and renaming a released
+  function to satisfy a convention learned afterwards would break callers for no gain.
+- **Settings namespace.** `<tool>.<setting>`, as `lock_tree.actions` and `lock_tree.history_query`.
+- **Redaction.** Any tool that stores query text reuses `pg_lock_tree`'s rules: redact by default,
+  the `SCRAM-SHA-256$4096:<salt>$<StoredKey>:<ServerKey>` shape included. `pg_bloat_cause` stores the
+  text of long transactions holding back VACUUM, so it is the one this applies to next.
+- **Optional dependencies.** A tool may use another when it is installed, but must work without it,
+  find it through `pg_extension` rather than assuming a schema, and pass its tests with and without.
+- **Docs layout.** README, INSTALL, docs/incident, docs/alerting, docs/history, docs/reference,
+  docs/roadmap and CHANGELOG, as `pg_lock_tree` splits them.
+
+## The shared matrix
+
+Every tool runs the **same** PostgreSQL matrix, so a range claim means the same thing everywhere and a
+change moves all of them together. That is the rule. Today it is not yet true, and the difference is
+stated rather than glossed:
+
+- `pg_lock_tree` runs 14 to 19beta4.
+- `pg_bloat_cause` and `pg_limit_runway` run 14 to 18.
+
+19 is not in the later two because PostgreSQL 19 is not released: RC 1 was cut on 2026-10-15, RC 2 is
+planned for 2026-11-12, and general availability for 2026-11-19. The range is expected to move to 19
+across all three once it is GA, and together with the books, which state a range of their own.
+PostgreSQL 14 reaches end of life on 2026-11-12, so whether the floor stays at 14 is part of the same
+decision.
+
 ## Workflow policy
 
 Three rules every workflow in this repository follows, so a change to one file does not
