@@ -89,10 +89,10 @@ it still holds, **Resolved** means it no longer does. pg_lock_tree is not change
 
 1. **Resolved on 2026-10-12.** ~~There is no `tool` field yet.~~ `pg_lock_tree` has emitted `tool`,
    `subject` and `sampled_at` since 1.1.11, under its additive-keys rule. Nothing is outstanding.
-2. **Partly resolved on 2026-10-12.** ~~`event` values are not yet shared.~~ The vocabulary is now
-   fixed in [ALERTS.md](ALERTS.md) (`alerting`, `escalated`, `cleared`). `pg_lock_tree` sends
-   `alerting` and `cleared`; the remaining gap is that it does not yet send `escalated`, proposed for
-   1.2.0. Open only for `escalated`.
+2. **Resolved.** ~~`event` values are not yet shared.~~ The family uses two values, `alerting` and
+   `cleared`, fixed in [ALERTS.md](ALERTS.md). Escalation is carried by two payload fields, `level`
+   and `previous_level`, on the `alerting` event, not a third event value; `pg_lock_tree` sends them
+   in 1.2.0. `escalated` stays in the vocabulary (rule 2) and is sent by no tool.
 3. **Open.** **"PostgreSQL 14 and later" outlives PG 14's support.** PG 14 reaches end of life on
    2026-11-12 (`pg_lock_tree/CONTRIBUTING.md`, "The matrix"). Decided on 2026-10-09: all three tools
    keep 14 as their floor anyway, so they stay useful to PG 14 users for months after that date. See
@@ -116,9 +116,9 @@ The one thing that makes three extensions a family rather than three repos. Deci
 - **Required keys**, present in every payload from every tool: `tool`, `channel`, `event`, `subject`
   (what the alert is about, stable across samples: a root's `application_name`, a table's
   qualified name, a limit's identity), `summary` (one human sentence), and `sampled_at`.
-- **The `event` vocabulary**: `alerting` (onset), `escalated`, `cleared`. pg_lock_tree currently
-  sends `alerting` for both onset and escalation; decide whether `escalated` is added there or
-  whether the umbrella adopts pg_lock_tree's two values as-is.
+- **The `event` vocabulary**: two values, `alerting` and `cleared`. Escalation is not a third event;
+  it is the payload fields `level` and `previous_level` on an `alerting`, so a consumer tells an onset
+  from an escalation without a new event name.
 - **Tool-specific keys** stay allowed and stay additive-only, under pg_lock_tree's existing rule that
   a consumer must ignore keys it does not recognise.
 - **Channels**: one per tool (`lock_tree`, `bloat_cause`, `limit_runway`) as today, or one shared

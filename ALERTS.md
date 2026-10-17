@@ -24,7 +24,7 @@ Present in **every** payload from **every** tool.
 |---|---|---|
 | `tool` | string | Which extension sent this. One of `pg_lock_tree`, `pg_bloat_cause`, `pg_limit_runway`. |
 | `channel` | string | The channel it was sent on. Defaults to the tool's name. |
-| `event` | string | One of `alerting`, `escalated`, `cleared`. See below. |
+| `event` | string | `alerting` or `cleared`. See below. `escalated` is reserved and sent by no tool. |
 | `subject` | string | What the alert is about, and **stable across the samples of one incident**. This is the dedup key. |
 | `sampled_at` | timestamptz | When the tool formed this payload: the `NOTIFY` time, `statement_timestamp()` in `pg_lock_tree`, not the time of a stored sample. An alert is about the live state, and there is no sampled instant behind it. The name promises more than that, but it has shipped, and rule 1 forbids renaming a key. |
 
@@ -57,14 +57,22 @@ and should say so rather than emit a subject that is subtly unstable.
 
 | value | meaning |
 |---|---|
-| `alerting` | First notification for this subject. Once per incident, not once per sample. |
-| `escalated` | Materially worse than at the **last notification**, not than at the last sample. |
+| `alerting` | A notification about a standing incident: the first for this subject, or a later one that is materially worse than at the last notification. |
 | `cleared` | The condition is gone. Once. |
 
-`escalated` is optional per tool and is **not yet implemented by `pg_lock_tree`**, which sends
-`alerting` for both onset and escalation. It is in the vocabulary now so that a consumer can write
-the branch before any tool uses it. Sending it from `pg_lock_tree` is **proposed for 1.2.0**: a
-behaviour change, so it gets its own release rather than riding along with an additive one.
+The family uses **two** event values, `alerting` and `cleared`. **Escalation is not a third event**: it
+is carried by two payload fields that any escalating tool sends, `level` (the severity now) and
+`previous_level` (the severity at the last notification). A consumer tells an onset from an escalation
+on the same `alerting` event: `previous_level` is null at onset, and set and lower than `level` at an
+escalation.
+
+This was decided rather than assumed. A new event value would have meant every consumer writing a
+branch for something the payload can already say, and the escalation rule is unchanged either way:
+materially worse is measured against the **last notification**, not the last sample. `pg_lock_tree` is
+the first tool to send `level` and `previous_level`, in 1.2.0.
+
+`escalated` was in the vocabulary from the first draft. Rule 2 forbids removing a value, so it stays
+defined, but **no tool sends it**, and nothing should treat its absence as a fault.
 
 ### Escalation, as `pg_lock_tree` decides it
 
@@ -141,5 +149,6 @@ ones.
 ## Adding a tool
 
 Copy the five required keys. Send `alerting` once and `cleared` once per subject. If the tool has a
-materially-worse threshold, implement `escalated` and say what it is in its own documentation. Write
-its tests to assert the required keys are present, which is the check that keeps the family a family.
+materially-worse threshold, send `level` and `previous_level` on the `alerting` event and say what
+"materially worse" is in its own documentation. Write its tests to assert the required keys are
+present, which is the check that keeps the family a family.
