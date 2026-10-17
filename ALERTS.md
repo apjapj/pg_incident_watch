@@ -66,11 +66,14 @@ is carried by two payload fields that any escalating tool sends, `level` (the se
 on the same `alerting` event: `previous_level` is null at onset, and set and lower than `level` at an
 escalation.
 
-**The level's meaning is pinned here, so the tools cannot drift.** At onset `level` is `1` and
-`previous_level` is null. On each escalation `level` is the previous level plus one, which is the
-tool's own count of notifications for the subject (`notify_count + 1`), and `previous_level` is the
-previous level. A level therefore counts how far an incident has climbed, one step per rung, and
-matches a per-tool severity that rises one step at a time, as `pg_bloat_cause`'s size rungs do. The
+**The level's meaning is pinned here, so the tools cannot drift.** `level` is the tool's count of
+notifications for this subject **after** incrementing it for this notification, read after the
+increment: `1` at onset, `2` at the first escalation, `3` at the second, and so on.
+`previous_level` is that number minus one, so it is null at onset and the previous `level` at each
+escalation. The point of reading it after the increment is that "`notify_count`" and
+`notify_count + 1` are the same number only once the increment point is fixed, and an off-by-one
+here is invisible in prose. A level therefore counts how far an incident has climbed, one step per
+rung, and matches a per-tool severity that rises one step at a time, as `pg_bloat_cause`'s rungs do. The
 `cleared` payload carries the **last level reached** at `level`, with `previous_level` absent, so a
 listener sees how far the incident got before it cleared. `pg_lock_tree` sends all of this in 1.2.0;
 `pg_bloat_cause` is the next tool to, with the sampler in step 6.
