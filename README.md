@@ -139,40 +139,21 @@ Anything newer than 14 is a per-feature check that degrades with a stated messag
 For example `pg_stat_user_tables.n_tup_newpage_upd` exists only on 16 and later, so on 14 and 15
 pg_bloat_cause's HOT-update finding cannot use it and must say so in the finding rather than guess.
 
-### 3. Fix the shared conventions
+### 3. ~~Fix the shared conventions~~ **Done: [CONTRIBUTING.md](CONTRIBUTING.md#shared-conventions)**
 
-Short, and written once here so the new tools do not each reinvent them:
-
-- **Naming**: every object prefixed with the tool name (`lock_tree_*`, `bloat_cause_*`,
-  `limit_runway_*`), as pg_lock_tree already does.
-- **Function shapes**: the same verbs across tools, so muscle memory transfers. `_text()` for
-  reading, `_command()` for runnable SQL that never runs itself, `_sample()`, `_notify()`,
-  `_notify_resolved()`, `_prune()`, `_history_size()`, and `_find()` for a search over sampled
-  history that reads the stored tier and nothing else. `_find()` is in that list because
-  `pg_lock_tree` shipped `lock_tree_archive_find()` before this document existed, and renaming a
-  released function to match a convention learned afterwards would break callers for no gain.
-- **Settings namespace**: `<tool>.<setting>` GUCs, as `lock_tree.actions` and
-  `lock_tree.history_query` do.
-- **Redaction**: any tool storing query text reuses pg_lock_tree's rules (redact by default,
-  `SCRAM-SHA-256$4096:<salt>$<StoredKey>:<ServerKey>` shape included). pg_bloat_cause will store the
-  text of long transactions holding back VACUUM, so this applies to it.
-- **Optional dependencies**: a tool may use another if it is installed (pg_bloat_cause calling
-  pg_lock_tree for the lock chain) but must work without it, find it through `pg_extension` rather
-  than assuming a schema, and its tests must pass with and without it.
-- **Docs layout**: the README, INSTALL, docs/incident, docs/alerting, docs/history, docs/reference,
-  docs/roadmap, CHANGELOG split that pg_lock_tree uses.
+The conventions are written once, there, and the three tools follow them.
 
 ### 4. Share the test matrix
 
-pg_lock_tree's `scripts/matrix.sh` and Docker images already run PG 14 to 19. Extract the image and
-runner so all three tools run the same matrix, plus one job that installs all three into one
-database and runs every suite, which is the only test of "works alongside".
+The rule is in [CONTRIBUTING.md](CONTRIBUTING.md#the-shared-matrix). The matrices are not yet the
+same: `pg_lock_tree` runs 14 to 19beta4 and the other two 14 to 18, and 19 waits for general
+availability. What remains is the shared image and runner, and one job that installs all three into
+one database and runs every suite, which is the only test of "works alongside".
 
-### 5. Add `tool` to pg_lock_tree (in that project, not here)
+### 5. ~~Add `tool` to pg_lock_tree~~ **Done: pg_lock_tree 1.1.11**
 
-Once step 1 is written: a minor pg_lock_tree release adding `tool: "pg_lock_tree"` and any other
-required keys to both payloads, with a test that the payload validates against the contract. Raise
-it on pg_lock_tree's roadmap.
+`pg_lock_tree` 1.1.11 added `tool`, `subject` and `sampled_at` to both payloads, with the payload
+validated against the contract by its alert test in `pg_lock_tree`.
 
 ### 6. ~~Ship a reference listener~~ **Done: [`scripts/listen.sh`](scripts/listen.sh)**
 
