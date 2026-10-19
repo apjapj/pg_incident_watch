@@ -14,11 +14,11 @@ the tools are held to, is this page and [ALERTS.md](ALERTS.md).
 This repository is <https://github.com/apjapj/pg_incident_watch>. It is one of four: this
 umbrella and the three extensions it covers.
 
-| Extension | Question it answers | State on 2026-10-15 |
+| Extension | Question it answers | State on 2026-10-19 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | Shipping. 1.1.16 on main, tagged `v1.1.15` and `v1.1.16`, both released and 1.1.16 latest; 517 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
-| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.3.1 on main, with the explicit measurement and the whole-range matrix; tagged through `v0.3.1`; 15 scenarios and 54 pgTAP tests green on PG 14 to 18 |
-| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.3.0 on main, with history, projected dates and alerting; tagged through `v0.3.0`; 19 scenarios and 96 pgTAP tests green on PG 14 to 18 |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | 1.2.0 on main, tagged `v1.2.0` and released; 538 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
+| [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.4.1 on main, with the explicit measurement and the whole-range matrix; tagged `v0.4.1`; 15 scenarios and 131 pgTAP tests green on PG 14 to 18 |
+| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.5.0 released; 0.5.1 ready on a branch, fixing the schema-USAGE bug the family stack found; 19 scenarios and 150 pgTAP tests green on PG 14 to 18 |
 
 The three extensions are separate repositories on purpose: install only what you need.
 Changing the contract or the plan, and what this repository's gate does not check:
@@ -143,12 +143,17 @@ pg_bloat_cause's HOT-update finding cannot use it and must say so in the finding
 
 The conventions are written once, there, and the three tools follow them.
 
-### 4. Share the test matrix
+### 4. ~~Share the test matrix~~ **Done: the family stack**
 
-The rule is in [CONTRIBUTING.md](CONTRIBUTING.md#the-shared-matrix). The matrices are not yet the
-same: `pg_lock_tree` runs 14 to 19beta4 and the other two 14 to 18, and 19 waits for general
-availability. What remains is the shared image and runner, and one job that installs all three into
-one database and runs every suite, which is the only test of "works alongside".
+`stacks/family.toml` is the first concrete stack: the three extensions, their pinned refs, the
+`postgres` database (pg_cron can only be created there), and the cross-tool contract.
+`scripts/coexist.sh` installs them into one database, runs every suite, and asserts that each
+sender carries `level` and `previous_level` on `alerting` with its own default channel.
+
+The first run found a real defect: `limit_runway_sequences()` required `SELECT` on a sequence but
+not `USAGE` on its schema, so `cron.jobid_seq` raised instead of being marked unreadable. Fixed in
+0.5.1. The stack runs on 14-18 now; 19 joins at GA. The book's stacks work (plan item 4.6) should
+adopt this manifest format rather than invent a second one.
 
 ### 5. ~~Add `tool` to pg_lock_tree~~ **Done: pg_lock_tree 1.1.11**
 
@@ -178,13 +183,9 @@ Update this page and the PDF once 1 to 3 are decided: correct the version line, 
 
 ### 8. Make the family public, starting with pg_lock_tree
 
-The checklist is in pg_lock_tree's [docs/roadmap.md](https://github.com/apjapj/pg_lock_tree/blob/main/docs/roadmap.md#making-the-repository-public),
-where its roadmap lives: what can be prepared now (internal host names in the workflows and history,
-secret scanning on GitHub, a licence GitHub can detect, a security policy, release notes) and the
-outward steps that are Piotr's alone (pushing the public tags, the GitHub Releases, visibility, branch
-protection). As of 2026-10-12 the public tags are v1.1.15 and v1.1.16 (both released); what remains for
-Piotr alone is visibility and branch protection. This page goes public with or after pg_lock_tree,
-so the links above are live for a public reader when it does.
+The repositories are public, the current releases are tagged and released (`v1.2.0`, `v0.4.1`,
+`v0.5.0`), and `main` is protected by a pull-request rule on both GitHub and Forgejo. The
+`SECURITY.md` files point at GitHub's private vulnerability reporting, which is enabled on all four.
 
 ## Open questions
 
