@@ -23,9 +23,8 @@ ref = "v0.4.1"
 [[extension]]
 name = "pg_limit_runway"
 repo = "apjapj/pg_limit_runway"
-# v0.5.1 carries the schema-USAGE fix this stack found. Pin the commit until the tag is cut,
-# then replace this with "v0.5.1".
-ref = "d7f6628"   # short SHA of the 0.5.1 branch tip, so the manifest stays readable
+# v0.5.1 carries the schema-USAGE fix this stack found.
+ref = "v0.5.1"
 
 [contract]
 # The family contract, checked across tools rather than inside one suite.
