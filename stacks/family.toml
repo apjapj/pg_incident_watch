@@ -1,0 +1,35 @@
+# The family stack: the three extensions installed together in one database.
+#
+# This is the first concrete "tested stack". The book's stacks work (plan item 4.6) should adopt
+# this format rather than invent another: a list of extensions, their pinned refs, the database,
+# and the checks that are about the combination rather than about one tool.
+
+[stack]
+name = "family"
+# pg_lock_tree's suite creates pg_cron, and pg_cron can only be created in postgres.
+database = "postgres"
+majors = [14, 15, 16, 17, 18]
+
+[[extension]]
+name = "pg_lock_tree"
+repo = "apjapj/pg_lock_tree"
+ref = "v1.2.0"
+
+[[extension]]
+name = "pg_bloat_cause"
+repo = "apjapj/pg_bloat_cause"
+ref = "v0.4.1"
+
+[[extension]]
+name = "pg_limit_runway"
+repo = "apjapj/pg_limit_runway"
+# v0.5.1 carries the schema-USAGE fix this stack found. Pin the commit until the tag is cut,
+# then replace this with "v0.5.1".
+ref = "d7f6628"   # short SHA of the 0.5.1 branch tip, so the manifest stays readable
+
+[contract]
+# The family contract, checked across tools rather than inside one suite.
+event = "alerting"
+keys = ["level", "previous_level"]
+senders = ["lock_tree_notify", "bloat_cause_notify", "limit_runway_notify"]
+channels = ["lock_tree", "bloat_cause", "limit_runway"]
