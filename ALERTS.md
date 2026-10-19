@@ -102,21 +102,23 @@ time" is true on every sample and would notify every sample.
 
 ### `pg_lock_tree`'s payloads, as shipped
 
-Onset, from `lock_tree_notify()`. Escalations currently send this same shape with the same `event`:
+Onset, from `lock_tree_notify()`. An escalation sends this same shape with the same `event`, a higher
+`level`, and `previous_level` set to the level it replaced:
 
 ```json
 {"tool":"pg_lock_tree","subject":"pid 179","sampled_at":"2026-10-09T09:12:04.118+01:00",
- "channel":"lock_tree","event":"alerting","root_pid":179,"root_object":null,
- "application_name":"nightly_batch","blocked_sessions":12,"max_depth":3,"longest_wait":"1m30s",
- "waiting_for":"relation public.ledger"}
+ "channel":"lock_tree","event":"alerting","level":1,"previous_level":null,"root_pid":179,
+ "root_object":null,"application_name":"nightly_batch","blocked_sessions":12,"max_depth":3,
+ "longest_wait":"1m30s","waiting_for":"AccessShareLock on ledger"}
 ```
 
 Clearing, from `lock_tree_notify_resolved()`. The `subject` is built by the same expression, so a
-listener can pair it with the onset:
+listener can pair it with the onset. `level` is the last level the incident reached, and
+`previous_level` is absent rather than null:
 
 ```json
 {"tool":"pg_lock_tree","subject":"pid 179","sampled_at":"2026-10-09T09:21:40.502+01:00",
- "event":"cleared","channel":"lock_tree","root_pid":179,"root_object":null,
+ "event":"cleared","level":3,"channel":"lock_tree","root_pid":179,"root_object":null,
  "application_name":"nightly_batch","blocked_at_most":40,"notified_count":3}
 ```
 
@@ -125,7 +127,9 @@ to it.
 
 `blocked_at_most` and `notified_count` are `pg_lock_tree`'s own keys: what the incident peaked at, and
 how many notifications it took. Values above are illustrative; the key set and order are the shipped
-ones.
+ones. `waiting_for` is the lock mode and what it is on, and the relation is rendered with `regclass`,
+so it is schema-qualified only when it is off the reading session's `search_path`; it is not a stable
+key and is shown for a reader, not to route on.
 
 ## Optional keys
 
