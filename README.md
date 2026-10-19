@@ -18,7 +18,7 @@ umbrella and the three extensions it covers.
 |---|---|---|
 | [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | 1.2.0 on main, tagged `v1.2.0` and released; 538 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
 | [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.4.1 on main, with the explicit measurement and the whole-range matrix; tagged `v0.4.1`; 15 scenarios and 131 pgTAP tests green on PG 14 to 18 |
-| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.5.0 released; 0.5.1 ready on a branch, fixing the schema-USAGE bug the family stack found; 19 scenarios and 150 pgTAP tests green on PG 14 to 18 |
+| [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.5.1 on main, tagged `v0.5.1` and released, fixing the schema-USAGE bug the family stack found; 19 scenarios and 150 pgTAP tests green on PG 14 to 18 |
 
 The three extensions are separate repositories on purpose: install only what you need.
 Changing the contract or the plan, and what this repository's gate does not check:
@@ -184,16 +184,12 @@ Update this page and the PDF once 1 to 3 are decided: correct the version line, 
 ### 8. Make the family public, starting with pg_lock_tree
 
 The repositories are public, the current releases are tagged and released (`v1.2.0`, `v0.4.1`,
-`v0.5.0`), and `main` is protected by a pull-request rule on both GitHub and Forgejo. The
+`v0.5.1`), and `main` is protected by a pull-request rule on both GitHub and Forgejo. The
 `SECURITY.md` files point at GitHub's private vulnerability reporting, which is enabled on all four.
 
-## Open questions
+## Decisions
 
-- One repository or three? Today each tool is its own directory. A monorepo makes the shared matrix
-  and contract easy; three repos keep "install only what you need" literal. Recommendation: three
-  repos plus this directory as the umbrella, since pg_lock_tree is already standalone.
-- Should there be a meta-extension (`CREATE EXTENSION pg_incident_watch CASCADE`) that requires all
-  three? Cheap to add, but it contradicts "install only what you need" as the headline. Recommend not
-  until someone asks.
-- Does the umbrella ever offer a single "what's wrong right now" view across installed tools? It
-  would be the obvious first query in an incident, and it is also how this becomes a dashboard.
+The eleven scope questions carried across the tools are answered in
+[docs/scope-decisions.md](docs/scope-decisions.md): what `pg_bloat_cause` will and will not measure,
+how `pg_limit_runway` reads its limits, and what the umbrella will never become.
+
