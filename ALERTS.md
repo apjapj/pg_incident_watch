@@ -9,9 +9,8 @@ contract nobody will implement.
 
 - `pg_lock_tree` implements it, since 1.1.11. See its `docs/alerting.md`, and the shipped payloads
   [below](#pg_lock_trees-payloads-as-shipped).
-- `pg_bloat_cause` and `pg_limit_runway` now ship code, but neither sends on the channel yet. The
-  contract was written before either had code, deliberately, so that neither had to invent a payload
-  shape locally; neither has implemented the five required keys so far.
+- `pg_bloat_cause` implements it from 0.4.0, and `pg_limit_runway` from 0.5.0. All three send the five
+  required keys and the escalation keys, `level` and `previous_level`, on `alerting`.
 
 The payload contract itself does not depend on the PostgreSQL version. The family's version floor,
 PostgreSQL 14 and later, is decided in the README, step 2.
@@ -75,13 +74,14 @@ escalation. The point of reading it after the increment is that "`notify_count`"
 here is invisible in prose. A level therefore counts how far an incident has climbed, one step per
 rung, and matches a per-tool severity that rises one step at a time, as `pg_bloat_cause`'s rungs do. The
 `cleared` payload carries the **last level reached** at `level`, with `previous_level` absent, so a
-listener sees how far the incident got before it cleared. `pg_lock_tree` sends all of this in 1.2.0;
-`pg_bloat_cause` is the next tool to, with the sampler in step 6.
+listener sees how far the incident got before it cleared. All three tools send this: `pg_lock_tree`
+from 1.2.0, `pg_bloat_cause` from 0.4.0 and `pg_limit_runway` from 0.5.0.
 
 This was decided rather than assumed. A new event value would have meant every consumer writing a
 branch for something the payload can already say, and the escalation rule is unchanged either way:
-materially worse is measured against the **last notification**, not the last sample. `pg_lock_tree` is
-the first tool to send `level` and `previous_level`, in 1.2.0.
+materially worse is measured against the **last notification**, not the last sample. `pg_lock_tree` was
+the first tool to send `level` and `previous_level`, in 1.2.0; `pg_bloat_cause` 0.4.0 and
+`pg_limit_runway` 0.5.0 followed.
 
 `escalated` was in the vocabulary from the first draft. Rule 2 forbids removing a value, so it stays
 defined, but **no tool sends it**, and nothing should treat its absence as a fault.
