@@ -8,6 +8,8 @@
 name = "family"
 # pg_lock_tree's suite creates pg_cron, and pg_cron can only be created in postgres.
 database = "postgres"
+# The three tools' own CI already runs 19beta4. The stack waits for the stable 19, so a
+# pre-release image never becomes the thing the family is tested against.
 majors = [14, 15, 16, 17, 18]
 
 [[extension]]
@@ -18,6 +20,9 @@ ref = "v1.2.0"
 [[extension]]
 name = "pg_bloat_cause"
 repo = "apjapj/pg_bloat_cause"
+# v0.5.0 is on main and adds the bloat_cause.holder_query opt-in. The pin moves to it when its tag
+# is cut, and not before: scripts/coexist.sh resolves every ref with git rev-parse before it
+# installs anything, so a ref that does not exist is a stack that cannot run.
 ref = "v0.4.1"
 
 [[extension]]
