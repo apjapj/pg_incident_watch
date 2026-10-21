@@ -4,6 +4,9 @@ Eleven questions that had been carried as "open" across the three tools and the 
 answered here so the next person can tell a decision from an omission. None of these changes code;
 where a decision describes current behaviour, this says where that behaviour is documented.
 
+**Revised 2026-10-21:** item 2 now defers to the newer `pg_bloat_cause` decision. The earlier wording
+here said TOAST tables get their own rows over threshold; that is no longer the decision.
+
 ## pg_bloat_cause
 
 **1. Index bloat is out of scope.**
@@ -11,10 +14,12 @@ B-tree bloat has different causes (deletion patterns, no deduplication on older 
 different fix (`REINDEX CONCURRENTLY`). Keeping it out keeps the tool's answer to "what is slowing
 down" about table dead rows and their cause. A separate tool or a separate feature can own it.
 
-**2. TOAST tables get their own rows only when they are over threshold.**
-They bloat independently but are vacuumed with their parent, so folding every TOAST table into the
-parent would hide a real row; listing every one of them would drown the parent. Over threshold they
-are their own row, and the row says they vacuum with the parent.
+**2. TOAST is folded into the parent, never its own row.**
+The operational decision lives in
+[`pg_bloat_cause/docs/index-and-toast.md`](https://github.com/apjapj/pg_bloat_cause/blob/main/docs/index-and-toast.md):
+once implemented, TOAST is a secondary line on the parent when it is material, never a row for
+`pg_toast.pg_toast_<oid>` and never the primary cause. This replaces the 2026-10-19 wording that gave
+TOAST its own row over threshold. `pg_bloat_cause` does not implement the line yet.
 
 **3. The estimate stays visible per row: `dead_rows_source` is kept.**
 No extra prose marker is needed. Every row and payload already says `estimated` or `measured`, which
