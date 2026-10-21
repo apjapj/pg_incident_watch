@@ -23,6 +23,9 @@ Each extension's INSTALL.md has the exact statements.
 
 ## Minute 3: run the three first queries
 
+The same queries are in [`scripts/first-five-minutes.sql`](../scripts/first-five-minutes.sql), which
+skips a tool that is not installed rather than failing. Run it with `psql -X -f scripts/first-five-minutes.sql`.
+
 ```sql
 -- Who is blocking whom, in plain text?
 SELECT * FROM lock_tree_text();
