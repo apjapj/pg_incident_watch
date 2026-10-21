@@ -71,7 +71,7 @@ shows how one session can listen on all three channels.
 
 ## Where to go next
 
-- Mid-incident: [the lock tree incident card](../pg_lock_tree/README.md#the-incident-card).
+- Mid-incident: [the lock tree incident card](https://github.com/apjapj/pg_lock_tree#the-incident-card).
 - Alerting: each extension's `docs/alerting.md` and the family [ALERTS.md](../ALERTS.md).
 - After the incident: `pg_lock_tree/docs/after-the-incident.md`, `pg_bloat_cause/docs/detect.md`,
   `pg_limit_runway/docs/history.md`.
