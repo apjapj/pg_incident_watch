@@ -15,18 +15,7 @@ first yes names the tool.
    Yes: [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway). It gives the current value,
    the limit and the date each limit is reached.
 
-4. **Is a standby falling behind?**  
-   Yes: `pg_lag_cause`, planned. Until it exists, read the standby lag, the slot state and
-   `pg_stat_replication` directly.
-
-5. **Planning a schema change or an upgrade?**  
-   Yes: `pg_migration_guard`, planned. It will report the locks a change takes and a safer form.
-
-6. **Worried a setting puts data at risk?**  
-   Yes: `pg_config_risk`, planned. It will name the setting and the risk.
-
-If every answer is no, run the [first-five-minutes script](first-five-minutes.md): the three current
-tools' first queries, with a clear "not installed" line for any that are absent.
+If none of those fits, **more tools are planned**. They are not named here until they are released.
 
 ## This is not a health check
 
