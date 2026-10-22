@@ -39,4 +39,4 @@ what they checked and what they could not check; a missing tool is a gap, not a 
 `CREATE EXTENSION` is unavailable, the generated script route is the alternative: install, uninstall
 and cumulative migration scripts under `scripts/sql/` in each tool's repository. It is not the
 default, and the two routes must not be mixed in one database. The route is documented in each
-tool's `docs/script-install-route.md`; `pg_limit_runway` is the pilot.
+tool's script-install-route documentation; `pg_limit_runway` is the pilot.
