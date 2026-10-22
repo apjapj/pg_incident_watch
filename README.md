@@ -26,6 +26,11 @@ Changing the contract or the plan, and what this repository's gate does not chec
 
 ## Start here
 
+New to the family? The [first five minutes](docs/first-five-minutes.md) gets you to the three first
+queries. If you are already in an incident, [Which tool first](docs/which-tool-first.md) is the
+paper decision tree.
+
+
 New to the family? [The first five minutes](docs/first-five-minutes.md) takes you from install to
 the three first queries, the grants that are easy to miss, and the one-row-at-a-time action rule.
 
