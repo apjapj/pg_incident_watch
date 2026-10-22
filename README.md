@@ -24,6 +24,11 @@ The three extensions are separate repositories on purpose: install only what you
 Changing the contract or the plan, and what this repository's gate does not check:
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Start here
+
+New to the family? [The first five minutes](docs/first-five-minutes.md) takes you from install to
+the three first queries, the grants that are easy to miss, and the one-row-at-a-time action rule.
+
 ## Overview
 
 Most PostgreSQL outages have a known cause and a known diagnostic query: a session idle in a
