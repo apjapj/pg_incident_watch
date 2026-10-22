@@ -151,7 +151,7 @@ key and is shown for a reader, not to route on.
    every payload to route it, which is the problem `tool` exists to solve.
    A listener should route on `tool`, which is correct whichever channel a tool sends on.
 4. **Payloads stay small.** PostgreSQL **refuses** an oversized `NOTIFY`; it never truncates. Measured
-   on PostgreSQL 14, 18.6 and 19beta4: a 7999-byte payload is sent, and 8000 bytes or more is refused
+   on PostgreSQL 14, 18.6 and 19rc1: a 7999-byte payload is sent, and 8000 bytes or more is refused
    with `payload string too long`. The channel name's length makes no difference, because the limit
    applies to the payload alone. In a PL/pgSQL sender the error aborts the send, so the caller sees an
    error rather than a quiet omission. Treat 7999 bytes as a hard ceiling, not a target. No unbounded
