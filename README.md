@@ -16,7 +16,7 @@ umbrella and the three extensions it covers.
 
 | Extension | Question it answers | State on 2026-10-20 |
 |---|---|---|
-| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | 1.2.0 on main, tagged `v1.2.0` and released; 538 pgTAP tests green on PG 14 to 19beta4 on both CI systems |
+| [`pg_lock_tree`](https://github.com/apjapj/pg_lock_tree) | what's stuck now | 1.2.0 on main, tagged `v1.2.0` and released; 538 pgTAP tests green on PG 14 to 19rc1 on both CI systems |
 | [`pg_bloat_cause`](https://github.com/apjapj/pg_bloat_cause) | what's slowing down | 0.5.0 on main, adding the `bloat_cause.holder_query` opt-in; `v0.4.1` is the newest tag and `v0.5.0` awaits its cut; 15 scenarios and 152 pgTAP tests green on PG 14 to 19 |
 | [`pg_limit_runway`](https://github.com/apjapj/pg_limit_runway) | what will break next | 0.5.1 on main, tagged `v0.5.1` and released, fixing the schema-USAGE bug the family stack found; 19 scenarios and 150 pgTAP tests green on PG 14 to 19 |
 
@@ -158,7 +158,7 @@ sender carries `level` and `previous_level` on `alerting` with its own default c
 The first run found a real defect: `limit_runway_sequences()` required `SELECT` on a sequence but
 not `USAGE` on its schema, so `cron.jobid_seq` raised instead of being marked unreadable. Fixed in
 0.5.1. The stack runs on 14-18 now; 19 joins at GA, though the three tools' own CI already runs
-19beta4. The book's stacks work (plan item 4.6) should adopt this manifest format rather than
+19rc1. The book's stacks work (plan item 4.6) should adopt this manifest format rather than
 invent a second one.
 
 ### 5. ~~Add `tool` to pg_lock_tree~~ **Done: pg_lock_tree 1.1.11**
