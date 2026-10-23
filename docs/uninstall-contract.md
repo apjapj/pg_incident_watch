@@ -1,12 +1,12 @@
 # Clean drop: what each extension must show
 
-**Status: specification, no code.** Written 2026-10-21 for the BookRunner lifecycle capture and the
+**Status: specification, no code.** Written 2026-10-21 for the internal lifecycle capture and the
 REMOVE band. It is the answer to "what does a clean `DROP EXTENSION` look like?" before a shared
-snapshot kit exists. The method is a catalogue snapshot diff around the drop; this note fixes the
+snapshot tool exists. The method is a catalogue snapshot diff around the drop; this note fixes the
 expected result, not the implementation.
 
-Until ProbeKit (or the BookRunner location Piotr chooses) is pinned, no extension gets a one-off
-uninstall test. The CI check adopts the shared helper once it exists.
+Until the shared snapshot tool is pinned, no extension gets a one-off uninstall test. The CI check
+adopts the shared helper once it exists.
 
 ## The method this is written for
 
@@ -130,9 +130,9 @@ These are expected and must not be reported as drop residue:
   the check.
 - `LISTEN` registrations. They are session state, not catalogue objects.
 
-## Checks to build in the shared kit
+## Checks to build in the shared tool
 
-These are requirements for ProbeKit v0, not code in this repository:
+These are requirements for the shared snapshot tool, not code in this repository:
 
 1. Clean drop, no dependents: empty diff for every object class, every history and alert table
    gone with its data, no config-dump rows, no extension GUCs in a fresh session.
