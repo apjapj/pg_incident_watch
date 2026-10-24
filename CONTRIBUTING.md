@@ -116,10 +116,10 @@ and expects **not supported**. When two tools are designed to combine, add them 
 manifest and the coexist run; the stack is the tested combination, not a runtime dependency. The
 tool's own suite and the stack both run with the sibling present.
 
-The family-presence listing is optional umbrella SQL and no tool depends on it. It lists the installed
-family members and their versions through `pg_extension` for operators and the listener; it is not an
-extension, a meta-extension or a score. Each tool still checks its specific sibling through
-`pg_extension`, and no tool calls the listing to decide its basic answer.
+A family-presence listing, if added, will be optional umbrella SQL and no tool will depend on it. It
+would list the installed family members and their versions through `pg_extension` for operators and
+the listener; it is not an extension, a meta-extension or a score. Each tool still checks its specific
+sibling through `pg_extension`, and no tool calls the listing to decide its basic answer.
 
 ## The shared matrix
 
