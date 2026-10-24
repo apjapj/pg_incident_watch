@@ -77,6 +77,50 @@ these, and `pg_lock_tree` is the reference because it shipped first.
 - **Docs layout.** README, INSTALL, docs/incident, docs/alerting, docs/history, docs/reference,
   docs/roadmap and CHANGELOG, as `pg_lock_tree` splits them.
 
+## Optional sibling use and expanded reports
+
+A tool's **basic report must be complete with no sibling installed**. A sibling may add fields, but it
+must not change the basic rows, their ranking, their certainty or their commands. The basic answer is
+identical with and without the sibling; only the expanded fields differ.
+
+Expanded fields are additive and labelled. A field supplied by a sibling carries its source and one of
+these states:
+
+- **not installed**: the sibling is not present in `pg_extension`; the basic row is unchanged.
+- **not supported**: the sibling is present but older than the minimum version this tool documents.
+- **not established**: the sibling is present, but its data, the caller's privilege or the source
+  cannot support the claim. This is the existing not-established state, not an absence.
+- **a value, including zero**: a measured value from the documented reader. Zero is never used for
+  "absent" or "cannot tell".
+
+A basic row may say "not established"; it must not say "not installed" for a sibling it never used.
+
+**Detection.** Find the sibling through `pg_extension` by `extname`, never by guessing a schema or
+probing a function. Read its namespace from `pg_extension.extnamespace` joined to `pg_namespace`, and
+call its documented function with its documented signature. Use `pg_extension.extversion` for the
+version and compare it with the minimum this tool documents; do not use `pg_available_extensions` for
+presence, and do not compare versions as raw strings. If the sibling is absent, the expanded state is
+**not installed**; if it is too old, **not supported**; the basic answer is untouched.
+
+**Read-only, documented use only.** A tool may call the sibling's documented read functions or views.
+It must not read the sibling's tables directly, write to them, change its settings, assume
+`SECURITY DEFINER`, or use an undocumented function. The call runs with the caller's rights; if the
+caller lacks `EXECUTE`, the expanded state is **not established** and the basic answer still works. A
+tool never installs or upgrades a sibling, never uses `CASCADE`, and never makes the sibling a
+declared dependency.
+
+**Fixtures.** Each tool that uses a sibling runs its suite with the sibling installed and with it
+absent. The basic output must be identical in both; the expanded fields may differ only by
+**not installed**, **not supported** or their measured values. A second fixture runs an older sibling
+and expects **not supported**. When two tools are designed to combine, add them to the family stack
+manifest and the coexist run; the stack is the tested combination, not a runtime dependency. The
+tool's own suite and the stack both run with the sibling present.
+
+A family-presence listing, if added, will be optional umbrella SQL and no tool will depend on it. It
+would list the installed family members and their versions through `pg_extension` for operators and
+the listener; it is not an extension, a meta-extension or a score. Each tool still checks its specific
+sibling through `pg_extension`, and no tool calls the listing to decide its basic answer.
+
 ## The shared matrix
 
 Every tool runs the **same** PostgreSQL matrix, so a range claim means the same thing everywhere and a
